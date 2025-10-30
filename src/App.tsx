@@ -229,20 +229,7 @@ function App() {
           },
           { withCredentials: true }
         );
-        const ata = getAssociatedTokenAddressSync(
-          USDC_MAIN.address,
-          wallet.publicKey,
-          false,
-          TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        );
-        getAccount(connection, ata)
-          .then((account) => {
-            setAvailableBalance(new BN(account.amount));
-          })
-          .catch((err) => {
-            console.log("Error fetching ATA account:", err);
-          });
+        await refreshUser();
         setIsConnected(true);
         setIsLoading(false);
         setOpen(false);
@@ -372,18 +359,26 @@ function App() {
       ASSOCIATED_TOKEN_PROGRAM_ID
     );
 
-    const balanceResponse = await axios.get(
-      "http://localhost:3000/wallet/balance",
-      {
-        withCredentials: true,
-      }
-    );
-    const balance = new BN(balanceResponse.data.amount);
-    setBalance(printBN(balance, USDC_MAIN.decimals));
+    try {
+      const balanceResponse = await axios.get(
+        "http://localhost:3000/wallet/balance",
+        {
+          withCredentials: true,
+        }
+      );
+      const balance = new BN(balanceResponse.data.amount);
+      setBalance(printBN(balance, USDC_MAIN.decimals));
+    } catch (e) {
+      console.log(e);
+    }
 
-    const account = await getAccount(connection, ata);
+    try {
+      const account = await getAccount(connection, ata);
 
-    setAvailableBalance(new BN(account.amount));
+      setAvailableBalance(new BN(account.amount));
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const handleDepositSubmit = async () => {
@@ -790,7 +785,10 @@ function App() {
       <MessagesDrawer
         userAddress={userAddress}
         isOpen={messagesDrawerOpen}
-        onClose={() => setMessagesDrawerOpen(false)}
+        onClose={() => {
+          setMessagesDrawerOpen(false);
+          setSelectedChat(null);
+        }}
         chats={chatsFromFriends}
         messages={messagesByPeer}
         selectedChat={selectedChat}

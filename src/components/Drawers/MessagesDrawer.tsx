@@ -273,7 +273,9 @@ export const MessagesDrawer = ({
                         </span>
                       </div>
                       <p className="text-sm text-cyan-300/60 truncate">
-                        {messages[chat.id] ? messages[chat.id][0].content : ""}
+                        {messages[chat.id] && messages[chat.id][0]
+                          ? messages[chat.id][0].content
+                          : ""}
                       </p>
                     </div>
                   </div>
